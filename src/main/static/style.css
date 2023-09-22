@@ -1,0 +1,25 @@
+main > .container {
+    padding: 60px 15px 0;
+}
+.react{
+    color:black; 
+    background-color:transparent;
+    border:transparent;
+}
+.active-react{
+    color:darkgreen; 
+    background-color:transparent;
+    border:transparent;
+}
+.w-0{
+    display:none;
+}
+.w-10{
+    width:10%;
+}
+.w-20{
+    width:20%;
+}
+.w-30{
+    width:30%;
+}

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Balises list{% endblock %}
+{% block content %}
+{{ super() }}
+
+<div class="row">
+    <div class="col">
+        <h1 class="mt-5">Balises des Articles de SpotiNyk</h1>
+    </div>
+</div>
+
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col" style="width:10%">#</th>
+        <th scope="col" style="width:60%">Description</th>
+        <th scope="col" style="width:30%">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for balise in balises %}
+        <tr>
+            <th scope="row">{{balise.id}}</th>
+            <td class="lead">{{balise.description}}</td>
+            <td>
+                    <a href="{{url_for('balises.show', balise_id = balise.id)}}"
+                        class="btn btn-outline-success"
+                        role="button">
+                            Voir
+                    </a>
+                    {% if current_user.is_authenticated and current_user.profil.description == "admin" %}
+                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#update_{{balise.id}}">Modifier</button>
+                    <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#delete_{{balise.id}}">Supprimer</button>
+                    {% endif %}
+                </form>
+        
+            </td>
+        </tr>
+        <div class="modal fade" id="update_{{balise.id}}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Modification d'une balise</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{url_for('balises.update',balise_id=balise.id)}}" method="post" id="form_{{balise.id}}">
+                        <div class="row">
+                        <div class="col-6 my-1 text-align-center">Description:</div>
+                        <div class="col-6 my-1 p-0 text-align-center"> <input type="text" id="description" name="description" value="{{balise.description}}" required></div>
+                    </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                  <button type="submit" class="btn btn-primary" form="form_{{balise.id}}">Sauvegarder</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal fade" id="delete_{{balise.id}}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Supression d'une balise</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Etes-vous sur?</p>
+                    <form action="{{url_for('balises.destroy',balise_id=balise.id)}}" method="post" id="form_{{balise.id}}_delete">
+                        <input type="hidden" id="commID" name="commID" value="{{balise.id}}">
+                        </form>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                  <button type="submit" class="btn btn-danger" form="form_{{balise.id}}_delete">Supprimer</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock %}

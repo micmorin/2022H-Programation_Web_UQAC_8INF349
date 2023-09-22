@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% block title %}Home Page{% endblock %}
+{% block content %}
+{% with messages = get_flashed_messages() %} 
+    {% if messages %}
+    <div class="alert alert-primary" role="alert" id="messages">
+        <button type="button" class="btn-close" 
+                aria-label="Close" 
+                onclick="document.getElementById('messages').style.display = 'none';"></button>
+        {{ messages[0] }}
+    </div>
+    {% endif %} 
+{% endwith %}
+
+<div class="row">
+    <div class="col">
+        <h1 class="mt-5 text-center">Bienvenue sur le Site de SpotiNyk</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col">
+        <h3 class="mt-5">Nos Articles</h3>
+    </div>
+    {% if current_user.is_authenticated and current_user.profil.description != "lecteur"%}
+    <div class="col text-end">
+        <a class="btn btn-primary mt-5" href="{{url_for('posts.create')}}"> Créer un nouvel article</a>
+    </div>
+    {% endif %}
+</div>
+
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col" style="width:10%">#</th>
+        <th scope="col" style="width:15%">Auteur</th>
+        <th scope="col" style="width:30%">Titre</th>
+        <th scope="col" style="width:15%">Date</th>
+        <th scope="col" style="width:30%">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for post in posts %}
+        {% if post.status %}
+        <tr>
+            <th scope="row">{{post.id}}</th>
+            <td class="lead">{{post.user.name}}</td>
+            <td class="lead">{{post.title}}</td>
+            {% if post.pub_date == post.rev_date %}
+                <td class="lead">{{post.pub_date}}</td>
+            {% else %}
+                <td class="lead">{{post.rev_date}}</td>
+            {% endif %}
+            <td>
+                <form action="{{url_for('posts.destroy', post_id = post.id)}}" 
+                      method="POST">
+
+                    <a href="{{url_for('posts.show', post_id = post.id)}}"
+                        class="btn btn-outline-success"
+                        role="button">
+                            Voir
+                    </a>
+                    {% if current_user.is_authenticated and 
+                        (current_user.profil.description == "admin" or
+                         current_user == post.user) %}
+                    <a href="{{url_for('posts.update', post_id = post.id)}}"
+                        class="btn btn-outline-primary"
+                        role="button">
+                            Changer
+                    </a>
+                    <button type="submit" class="btn btn-outline-danger">Supprimer</button>
+                    {% endif %}
+                </form>
+
+            </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </tbody>
+  </table>
+  <div class="row">
+    <div class="col">
+        {% if current_user.is_authenticated and current_user.profil.description == "admin"%}
+        <h3 class="mt-5">Nos Utilisateurs</h3>
+        {% else %}
+        <h3 class="mt-5">Notre Personnel</h3>
+        {% endif %} 
+    </div>
+
+    {% if current_user.is_authenticated and current_user.profil.description == "admin"%}
+    <div class="col text-end">
+        <a class="btn btn-primary mt-5" href="{{url_for('users.create')}}"> Créer un nouvel utilisateur</a>
+    </div>
+    {% endif %}
+</div>
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col" style="width:10%">#</th>
+        <th scope="col" style="width:15%">Auteur</th>
+        <th scope="col" style="width:30%">Email</th>
+        <th scope="col" style="width:15%">Role</th>
+        <th scope="col" style="width:30%">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        {% if user.profil.description != "lecteur" or
+            (user.profil.description == "lecteur" and
+            current_user.is_authenticated and 
+            current_user.profil.description == "admin") %}
+        
+        <tr>
+            <th scope="row">{{user.id}}</th>
+            <td class="lead">{{user.name}}</td>
+            <td class="lead"><a href="mailto:{{user.email}}">{{user.email}}</a></td>
+            <td class="lead">{{user.profil.description}}</td>
+            <td>
+                <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#show_{{user.id}}">Voir</button>
+                    {% if current_user.is_authenticated and current_user.profil.description == "admin"%}
+                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#update_{{user.id}}">Modifier</button>
+                    <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#delete_{{user.id}}">Supprimer</button>
+                  {% endif %}
+            </td>
+        </tr>
+        <div class="modal fade" id="show_{{user.id}}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Modification d'un utilisateur</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                        <div class="row">
+                        <div class="col-6 my-1 text-align-center">Nom:</div>
+                        <div class="col-6 my-1 p-0 text-align-center"> <input type="text" id="name" name="name" value="{{user.name}}"></div>
+                        <div class="col-6 my-1 text-align-center"> Nom d'utilisateur:</div>
+                        <div class="col-6 my-1 p-0 text-align-center"> <input type="text" id="username" name="username" value="{{user.username}}"></div>
+                        <div class="col-6 my-1 text-align-center"> Addresse courriel:</div>
+                        <div class="col-6 my-1 p-0 text-align-center"> <input type="text" id="email" name="email" value="{{user.email}}"></div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal fade" id="update_{{user.id}}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Modification d'un utilisateur</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{url_for('users.update',user_id=user.id)}}" method="post" id="form_{{user.id}}">
+                        <div class="row">
+                        <div class="col-6 my-1 text-align-center">Nom:</div>
+                        <div class="col-6 my-1 p-0 text-align-center"> <input type="text" id="name" name="name" value="{{user.name}}"></div>
+                        <div class="col-6 my-1 text-align-center"> Nom d'utilisateur:</div>
+                        <div class="col-6 my-1 p-0 text-align-center"> <input type="text" id="username" name="username" value="{{user.username}}"></div>
+                        <div class="col-6 my-1 text-align-center"> Addresse courriel:</div>
+                        <div class="col-6 my-1 p-0 text-align-center"> <input type="text" id="email" name="email" value="{{user.email}}"></div>
+                        <div class="col-6 my-1 text-align-center"> Mot de passe:</div>
+                        <div class="col-6 my-1 p-0 text-align-center"> <input type="password" id="password" name="password"></div>
+                        {% if current_user.is_authenticated and current_user.profil.description == "admin"%}
+                        <div class="col-6 my-1 text-align-center"> Profil:</div>
+                        <div class="col-6 my-1 p-0 text-align-center"> 
+                          <select name="profil" id="profil">
+                            <option value="{{user.profil.id}}" selected disabled hidden>Selectionner</option>
+                            {% for p in profils %}
+                              <option value="{{p.id}}">{{p.description}}</option>
+                              {% endfor %}
+                        </select></div>
+                        {% endif %}
+                    </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                  <button type="submit" class="btn btn-primary" form="form_{{user.id}}">Sauvegarder</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal fade" id="delete_{{user.id}}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Supression d'un commentaire</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Etes-vous sur?</p>
+                    <form action="{{url_for('users.destroy',user_id=user.id)}}" method="post" id="form_{{user.id}}_delete">
+                        <input type="hidden" id="commID" name="commID" value="{{user.id}}">
+                        </form>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                  <button type="submit" class="btn btn-danger" form="form_{{user.id}}_delete">Supprimer</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+        {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

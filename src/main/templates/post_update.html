@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Mettre à jour l'article{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col">
+        <h1 class="mt-5">Mettre a jour un article</h1>
+    </div>
+    <div class="col text-end mt-5">
+        <a class="btn btn-primary" href="{{ url_for('posts.index') }}"> Retourner</a>
+    </div>
+</div>
+
+<form action="{{ url_for('posts.update', post_id=post.id) }}" method="POST" enctype="multipart/form-data">
+    <div class="mb-3 mt-3">
+        <label for="title" class="form-label">Titre</label>
+        <input type="text" name="title" class="form-control" id="inputTitle" value="{{post.title}}" required>
+    </div>
+    <div class="mb-3">
+        <label for="body" class="form-label">Corps de l'article</label>
+        <textarea id="inputBody" name="body" rows="10" class="form-control" required>{{post.body}}</textarea>
+    </div>
+    <div class="mb-3 mt-3">
+        <label for="title" class="form-label">Balises (separe par un espace ou une virgule)</label>
+        <input type="text" name="tags" class="form-control" id="inputTags" data-role="taginput"
+        value="{% for b in balises %}{{b.balise.description}}{{ ', ' if not loop.last else '' }}{% endfor %}">
+    </div>
+    <button type="submit" class="btn btn-success">Valider</button>
+    
+</form>
+
+{% endblock %}

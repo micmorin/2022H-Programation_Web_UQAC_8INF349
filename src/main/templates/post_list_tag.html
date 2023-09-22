@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Post Tag list{% endblock %}
+{% block content %}
+{{ super() }}
+
+<div class="row">
+    <div class="col-8">
+        <h1 class="mt-5">Articles de SpotiNyk pour la balise "{% if posts|length > 0%}{{posts[0].balise.description}}{% else %}{{po.description}}{% endif %}"</h1>
+    </div>
+    {% if current_user.is_authenticated and current_user.profil.description != "lecteur"%}
+    <div class="col-4 text-end">
+        <a class="btn btn-primary mt-5" href="{{url_for('posts.create')}}"> Créer un nouvel article</a>
+    </div>
+    {% endif %}
+    
+</div>
+
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col" style="width:10%">#</th>
+        <th scope="col" style="width:15%">Auteur</th>
+        {% set vars = {'titre': 'w-30', 'pub':'w-0'} %}
+        {% if current_user.is_authenticated and current_user.profil.description == "admin" %}
+            {{vars.update({'titre': 'w-20', 'pub':'w-10'})}}
+        {% else %}
+            {% for q in posts %}
+                {% if current_user.is_authenticated and current_user.id == q.post.user.id %}
+                    {{vars.update({'titre': 'w-20', 'pub':'w-10'})}}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        <th scope="col" class="{{titre}}">Titre</th>
+        <th scope="col" class="{{pub}}">Publier</th>
+        <th scope="col" style="width:15%">Date</th>
+        <th scope="col" style="width:30%">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for q in posts %}
+        {% if q.post.status or (
+            current_user.is_authenticated and current_user.profil.description != "admin" or
+                current_user == q.post.user)
+        %}
+        <tr>
+            <th scope="row">{{q.post.id}}</th>
+            <td class="lead">{{q.post.user.name}}</td>
+            {% if current_user.is_authenticated and 
+                (current_user.profil.description == "admin" or
+                current_user == q.post.user) %}
+                <td class="lead">{{q.post.title}}</td>
+                <td class="lead">{{q.post.status}}</td>
+            {% else %}
+            <td class="lead">{{q.post.title}}</td>
+            <td class="lead {{vars.pub}}">{{q.post.status}}</td>
+            {% endif %}
+            {% if q.post.pub_date == q.post.rev_date %}
+                <td class="lead">{{q.post.pub_date}}</td>
+            {% else %}
+                <td class="lead">{{q.post.rev_date}}</td>
+            {% endif %}
+                <td>
+                    <a href="{{url_for('posts.show', post_id = q.post.id)}}"
+                        class="btn btn-outline-success"
+                        role="button">
+                            Voir
+                    </a>
+                    {% if current_user.is_authenticated and 
+                        (current_user.profil.description == "admin" or
+                         current_user == q.post.user) %}
+                    <a href="{{url_for('posts.update', post_id = q.post.id)}}"
+                        class="btn btn-outline-primary"
+                        role="button">
+                            Changer
+                    </a>
+                    <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#delete_{{q.post.id}}">Supprimer</button>
+                    {% endif %}
+                </form>
+
+            </td>
+        </tr>
+
+        <div class="modal fade" id="delete_{{q.post.id}}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Supression d'une balise</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Etes-vous sur?</p>
+                    <form action="{{url_for('posts.destroy',post_id=q.post.id)}}" method="post" id="form_{{q.post.id}}_delete">
+                        <input type="hidden" id="commID" name="commID" value="{{q.post.id}}">
+                        </form>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                  <button type="submit" class="btn btn-danger" form="form_{{q.post.id}}_delete">Supprimer</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+        {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock %}

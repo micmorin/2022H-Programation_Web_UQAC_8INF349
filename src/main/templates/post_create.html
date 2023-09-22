@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Ajouter un Article{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col">
+        <h1 class="mt-5">Ajouter un nouvel article</h1>
+    </div>
+    <div class="col text-end mt-5">
+        <a class="btn btn-primary" href="{{ url_for('posts.index') }}"> Retourner</a>
+    </div>
+</div>
+
+<form action method="POST" enctype="multipart/form-data">
+    <div class="mb-3 mt-3">
+        <label for="title" class="form-label">Titre</label>
+        <input type="text" name="title" class="form-control" id="inputTitle" required>
+    </div>
+    <div class="mb-3">
+        <label for="body" class="form-label">Corps de l'article</label>
+        <textarea id="inputBody" name="body" rows="10" class="form-control" required></textarea>
+    </div>
+    <div class="mb-3 mt-3">
+        <label for="title" class="form-label">Balises (separe par un espace ou une virgule)</label>
+        <input type="text" name="tags" class="form-control" id="inputTags" data-role="taginput" required>
+    </div>
+
+    <button type="submit" class="btn btn-outline-primary" formaction="{{ url_for('posts.store',status=0)}}">Sauvegarder</button>
+    <button type="submit" class="btn btn-success" formaction="{{ url_for('posts.store',status=1) }}">Publier</button>
+    
+</form>
+
+{% endblock %}

@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Post Show{% endblock %}
+{% block content %}
+{{ super() }}
+<div class="row">
+    <div class="col">
+        <h1 class="mt-5">{{post.title}}</h1>
+    </div>
+    <div class="col text-end mt-5">
+      {% for r in rs %}
+        <a class="h3 me-1 mb-0 bi {{r['icone']}} align-middle{% if reaction.reaction_id == r['id'] %} active-react{% else %} react{% endif %}" href="/posts/{{post.id}}/reaction/{{r['id']}}"></a> 
+        <span>{{r['size']}}</span>
+        {% endfor %}
+        <a class="btn btn-primary ms-3 align-middle" href="{{url_for('posts.index')}}"> Retourner</a>
+            
+        
+    </div>
+</div>
+<div class="row border border-dark mt-3 mb-3">
+    <div class="col lead">
+        <p>{{post.body}}</p>
+    </div>
+</div>
+<div class="row border mt-3 mb-3">
+    <div class="col small text-center align-middle">
+        <span>Ecrit par {{post.user.username}} le {{post.pub_date}}. 
+            {% if post.pub_date != post.rev_date %}
+            Derniere Revision le {{post.rev_date}}.
+            {% endif %}
+        </span>
+    </div>
+</div>
+
+<div class="row border mt-3 mb-3">
+  <div class="col small">
+    <div>
+      <b>Balises</b>: {% for b in balises %}{{b.balise.description}}{{ ', ' if not loop.last else '' }}{% endfor %}
+    </div>
+  </div>
+</div>
+{% if current_user.is_authenticated %}
+<div class="row border mt-1 mb-1">
+    <div class="col-3 small text-center border-end">
+        <div class="row">
+          <span class="h1 bi 
+                {% if current_user.profil.description == 'admin' %} bi-person-plus-fill
+                {% elif current_user.profil.description == 'auteur' %} bi-person-lines-fill
+                {% else %} bi-person-fill
+                {% endif %}
+                align-center mt-3"></span>
+        </div>
+        <p>{{post.user.username}}</p>
+    </div>
+    <div class="col-9 pt-3 text-justify">
+        <form action="/posts/{{post.id}}/comment" method="post">
+        <p><textarea id="body" name="body" rows="4" placeholder="Taper ici pour entrer un nouveau commentaire" style="width:100%;"></textarea></p>
+        <input type="submit" value="Commenter" class="btn btn-success">
+        </form>
+    </div>
+</div>
+    {% for comment in comments %}
+    <div class="row border">
+        <div class="col-3 small text-center border-end">
+            <div class="row">
+                <span class="h1 bi 
+                {% if comment.user.profil.description == 'admin' %} bi-person-plus-fill
+                {% elif comment.user.profil.description == 'auteur' %} bi-person-lines-fill
+                {% else %} bi-person-fill
+                {% endif %}
+                align-center mt-3"></span>
+            </div>
+            <p>{{comment.user.username}}</p>
+            <p>{{comment.pub_date}}</p>
+            
+            {% if comment.user == current_user or current_user.profil.description == "admin" %}
+            <p>
+                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#update_{{comment.id}}">Modifier</button>
+                <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#delete_{{comment.id}}">Supprimer</button>
+            </p>
+            <div class="modal fade" id="update_{{comment.id}}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">Modification d'un commentaire</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="/posts/{{post.id}}/comment/edit" method="post" id="form_{{comment.id}}">
+                            <input type="hidden" id="commID" name="commID" value="{{comment.id}}">
+                            <p><textarea id="body" name="body" rows="4" style="width:100%;">{{comment.body}}</textarea></p>
+                            </form>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      <button type="submit" class="btn btn-primary" form="form_{{comment.id}}">Save changes</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal fade" id="delete_{{comment.id}}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">Supression d'un commentaire</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Etes-vous sur?</p>
+                        <form action="/posts/{{post.id}}/comment/delete" method="post" id="form_{{comment.id}}_delete">
+                            <input type="hidden" id="commID" name="commID" value="{{comment.id}}">
+                            </form>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      <button type="submit" class="btn btn-danger" form="form_{{comment.id}}_delete">Save changes</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+        </div>
+        <div class="col-9 p-3 text-justify">
+            <p>{{comment.body}}</p>
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}
+
+{% endblock %}
